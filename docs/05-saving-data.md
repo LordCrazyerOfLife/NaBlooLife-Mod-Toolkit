@@ -1,4 +1,8 @@
+[⬅️ 4. Events, yearly effects and careers](04-events-and-careers.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [6. Testing and debugging ➡️](06-testing-and-debugging.md)
+
 # 5. Saving data
+
+> **On this page:** [Per life](#per-life) · [Updating your data format](#updating-your-data-format) · [When it saves](#when-it-saves) · [When your mod is switched off](#when-your-mod-is-switched-off) · [Editing while testing](#editing-while-testing)
 
 ## Per life
 Anything you put on `state` is saved with that life.
@@ -37,3 +41,7 @@ Leave the player's progress in place, so turning the mod back on restores it. Of
 The built-in **Mod Menu** (Verified Mods) has a **Data** tab: search for your field name and edit
 values to test edge cases. Its **Career** tab lists a fixed set of careers, so look for yours in
 **Data**.
+
+---
+
+[⬅️ 4. Events, yearly effects and careers](04-events-and-careers.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [6. Testing and debugging ➡️](06-testing-and-debugging.md)

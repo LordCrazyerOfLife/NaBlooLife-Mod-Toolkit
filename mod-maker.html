@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NaBlooLife Mod Maker</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;padding:14px;background:#12151c;color:#eef;font:15px/1.5 system-ui,sans-serif}
+  main{max-width:640px;margin:0 auto} h1{font-size:22px;margin:4px 0} h2{font-size:17px;margin:0 0 8px}
+  section{background:#1b1f2a;border:1px solid #2b3140;border-radius:14px;padding:14px;margin:14px 0}
+  p{margin:6px 0;color:#aab} label{display:block;margin:10px 0 4px;font-weight:700;font-size:13px}
+  input,select{width:100%;padding:11px;border:1px solid #3a4257;border-radius:9px;background:#12151c;color:#fff;font:inherit}
+  button{margin:12px 8px 0 0;padding:11px 16px;border:0;border-radius:9px;background:#3f6fe0;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+  button.alt{background:#323a4d} button:disabled{opacity:.4}
+  pre{margin:10px 0 0;padding:12px;border-radius:10px;background:#0b0d12;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;max-height:320px;overflow:auto}
+  pre:empty{display:none} .ERROR{color:#ff8f8f} .WARN{color:#ffd36b} .ok{color:#7ee2a0}
+</style>
+</head>
+<body>
+<main>
+<h1>&#129520; NaBlooLife Mod Maker</h1>
+<p>Create a mod from a template, or check one you wrote. Everything happens in your browser: nothing is installed or uploaded.</p>
+
+<section>
+  <h2>1. Make a mod</h2>
+  <label for="kind">Template</label>
+  <select id="kind"></select>
+  <label for="title">Name</label>
+  <input id="title" placeholder="My Cool Menu" maxlength="60">
+  <label for="id">Mod id (lower-case letters, numbers and dashes)</label>
+  <input id="id" placeholder="my-cool-menu" maxlength="40" autocapitalize="off" autocomplete="off" spellcheck="false">
+  <button id="make">Download my mod</button><button id="view" class="alt">Show the code</button>
+  <pre id="made"></pre>
+</section>
+
+<section>
+  <h2>2. Check a mod</h2>
+  <p>Looks for syntax errors and common mistakes. <b>It does not run the file.</b> A pass does not mean a mod is safe or free of bugs.</p>
+  <input type="file" id="file">
+  <pre id="report"></pre>
+</section>
+</main>
+
+<script type="text/plain" data-template="01-hello-mod.js" data-label="Hello Mod: the smallest mod">
+/* TEMPLATE 01: Hello Mod. The smallest complete mod with a working on/off switch.
+ * Shows a popup when switched on. */
+(() => {
+  "use strict";
+  const ID = "hello-mod"; // change this: lower-case, unique
+
+  const mod = {
+    on() {
+      if (typeof notice === "function") notice("Hello", "My first mod is on!", null, true);
+      console.log(`[${ID}] on`);
+    },
+    off() {
+      console.log(`[${ID}] off`);
+    },
+  };
+
+  // Custom Mod Sources: register() runs on() and off() for you.
+  // Anywhere else it returns false (or doesn't exist), so start the mod directly.
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script type="text/plain" data-template="02-tabbed-menu.js" data-label="Tabbed Menu: tabs, no options">
+/* TEMPLATE 02: Tabbed Menu. A cheat-menu style window with a draggable button and tabs,
+ * and NO options in it. Add your own in the TABS list below. */
+(() => {
+  "use strict";
+  const ID = "my-menu"; // change this: lower-case, unique (used for element ids and CSS)
+  const TITLE = "My Menu";
+  const ICON = "\u{1F9F0}";
+  const COLOR = "#2f6fdb";
+
+  // ------------------------------------------------------------------ YOUR TABS
+  // render(panel, ui) fills one tab. It runs each time the tab is opened.
+  // ui.button(label, onTap)   ui.note(text)   ui.number(label, get, set)   ui.toggle(label, get, set)
+  const TABS = [
+    { name: "Tab 1", render(panel, ui) {} },
+    { name: "Tab 2", render(panel, ui) {} },
+    { name: "Tab 3", render(panel, ui) {} },
+  ];
+
+  // ------------------------------------------------------------------ menu engine
+  let made = []; // everything on() adds to the page, so off() can remove it
+
+  const make = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text; // textContent: text is never run as HTML
+    return n;
+  };
+
+  function on() {
+    if (made.length) return; // already on
+    const P = `#${ID}`;
+    const style = make("style");
+    style.textContent = `
+      ${P}-fab { position:fixed; z-index:2147482900; right:14px; bottom:150px; width:50px; height:50px; border:0; border-radius:50%;
+        background:${COLOR}; color:#fff; font-size:22px; padding:0; touch-action:none; user-select:none; box-shadow:0 3px 14px rgba(0,0,0,.5); }
+      ${P}-back { position:fixed; inset:0; z-index:2147482901; background:rgba(0,0,0,.5); display:none; }
+      ${P} { position:fixed; z-index:2147482902; left:50%; top:50%; transform:translate(-50%,-50%); width:min(350px,94vw);
+        height:min(480px,80vh); display:none; flex-direction:column; background:#1b1e26; color:#fff; border-radius:16px; overflow:hidden;
+        font-family:system-ui,sans-serif; text-align:left; box-shadow:0 10px 40px rgba(0,0,0,.6); }
+      ${P} button { font-family:inherit; cursor:pointer; }
+      ${P} .m-head { display:flex; align-items:center; padding:12px 14px; background:#20242e; }
+      ${P} .m-title { flex:1; font-weight:800; font-size:16px; }
+      ${P} .m-x { width:30px; height:30px; border:0; border-radius:50%; background:#2d323d; color:#fff; }
+      ${P} .m-tabs { display:flex; gap:4px; padding:8px; overflow-x:auto; border-bottom:1px solid #2d323d; }
+      ${P} .m-tab { flex:1 0 auto; border:0; border-radius:9px; padding:8px 10px; background:transparent; color:#9aa0ab;
+        font-size:12px; font-weight:800; text-transform:uppercase; }
+      ${P} .m-tab.active { background:#323849; color:#fff; }
+      ${P} .m-body { flex:1; overflow-y:auto; padding:12px 14px; }
+      ${P} .m-btn { display:block; width:100%; margin-bottom:8px; padding:11px; border:0; border-radius:9px; background:#2a2f3b;
+        color:#fff; font-size:13px; font-weight:700; text-align:left; }
+      ${P} .m-note { margin:0 0 10px; color:#9aa0ab; font-size:12px; line-height:1.45; }
+      ${P} .m-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; }
+      ${P} .m-row span { flex:1; }
+      ${P} .m-row input { width:110px; padding:8px; border:1px solid #3a4257; border-radius:8px; background:#151821; color:#fff; }
+    `;
+
+    const fab = make("button", "", ICON);
+    (fab.id = `${ID}-fab`), (fab.type = "button"), fab.setAttribute("aria-label", TITLE);
+    const back = make("div");
+    back.id = `${ID}-back`;
+    const win = make("div");
+    win.id = ID;
+    const head = make("div", "m-head");
+    const x = make("button", "m-x", "✕");
+    head.append(make("div", "m-title", TITLE), x);
+    const bar = make("div", "m-tabs");
+    const body = make("div", "m-body");
+    win.append(head, bar, body);
+
+    let current = 0;
+    const ui = {
+      button(label, onTap) {
+        const b = make("button", "m-btn", label);
+        b.type = "button";
+        b.addEventListener("click", () => onTap(b));
+        return body.appendChild(b);
+      },
+      note: (text) => body.appendChild(make("div", "m-note", text)),
+      number(label, get, set) {
+        const row = make("label", "m-row");
+        const input = make("input");
+        (input.inputMode = "decimal"), (input.value = get());
+        input.addEventListener("change", () => {
+          const n = Number(input.value);
+          if (input.value.trim() && Number.isFinite(n)) set(n);
+          input.value = get();
+        });
+        row.append(make("span", "", label), input);
+        return body.appendChild(row);
+      },
+      toggle(label, get, set) {
+        const text = () => `${get() ? "ON" : "OFF"} · ${label}`;
+        return ui.button(text(), (b) => (set(!get()), (b.textContent = text())));
+      },
+      refresh: () => show(current),
+    };
+
+    function show(i) {
+      current = i;
+      [...bar.children].forEach((t, n) => t.classList.toggle("active", n === i));
+      body.replaceChildren();
+      try {
+        TABS[i].render(body, ui);
+      } catch (e) {
+        console.warn(`[${ID}] tab "${TABS[i].name}"`, e);
+        ui.note("This tab had an error.");
+      }
+      if (!body.children.length) ui.note("Nothing here yet.");
+    }
+    TABS.forEach((tab, i) => {
+      const t = make("button", "m-tab", tab.name);
+      t.type = "button";
+      t.addEventListener("click", () => show(i));
+      bar.appendChild(t);
+    });
+
+    const openMenu = (yes) => {
+      back.style.display = yes ? "block" : "none";
+      win.style.display = yes ? "flex" : "none";
+      if (yes) show(current);
+    };
+    x.addEventListener("click", () => openMenu(false));
+    back.addEventListener("click", () => openMenu(false));
+    win.addEventListener("keydown", (e) => (e.key === "Escape" ? openMenu(false) : e.stopPropagation()));
+
+    // drag the button; tiny movements still count as a tap
+    let from = null,
+      moved = false;
+    fab.addEventListener("pointerdown", (e) => {
+      const r = fab.getBoundingClientRect();
+      from = { x: e.clientX, y: e.clientY, dx: e.clientX - r.left, dy: e.clientY - r.top };
+      moved = false;
+      fab.setPointerCapture?.(e.pointerId);
+    });
+    fab.addEventListener("pointermove", (e) => {
+      if (!from || (!moved && Math.hypot(e.clientX - from.x, e.clientY - from.y) < 8)) return;
+      moved = true;
+      fab.style.left = `${Math.max(4, Math.min(innerWidth - 54, e.clientX - from.dx))}px`;
+      fab.style.top = `${Math.max(4, Math.min(innerHeight - 54, e.clientY - from.dy))}px`;
+      fab.style.right = fab.style.bottom = "auto";
+    });
+    fab.addEventListener("pointerup", () => (from = null));
+    fab.addEventListener("pointercancel", () => (from = null));
+    fab.addEventListener("click", () => {
+      if (moved) return void (moved = false);
+      openMenu(win.style.display !== "flex");
+    });
+
+    made = [style, back, win, fab];
+    document.head.appendChild(style);
+    document.body.append(back, win, fab);
+  }
+
+  function off() {
+    made.forEach((n) => n.remove()); // listeners on removed elements go with them
+    made = [];
+  }
+
+  const mod = { on, off };
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script type="text/plain" data-template="03-menu-screen.js" data-label="Menu Screen: your own screen">
+/* TEMPLATE 03: Menu Screen. Adds a row to the Main Menu that opens your own full screen,
+ * drawn with the game's own list style. */
+(() => {
+  "use strict";
+  const ID = "my-screen";
+  const TITLE = "My Screen";
+  let active = false;
+  let hooked = false;
+
+  const chevron = () => (typeof CHEV !== "undefined" ? CHEV : "");
+  // only use row() with your own fixed text: it is inserted as HTML
+  const row = (key, title, text) =>
+    `<div class="row" data-${ID}="${key}"><img src="ui/gear.png"><div class="t"><b>${title}</b><span>${text}</span></div>${chevron()}</div>`;
+
+  function openScreen() {
+    sTitle.textContent = TITLE.toUpperCase();
+    sSub.style.display = "none";
+    sBack.innerHTML = typeof BACK_ICON !== "undefined" ? BACK_ICON : "&larr;";
+    sBack.onclick = () => openMainMenu();
+    sList.innerHTML = '<div class="sec">Options</div>' + row("hello", "Say hello", "Shows a popup");
+    sList.querySelector(`[data-${ID}="hello"]`).onclick = () => notice("Hello", "You tapped the row.", null, true);
+    sList.scrollTop = 0;
+  }
+
+  function addRow() {
+    if (!active || sList.querySelector(`[data-${ID}="open"]`)) return;
+    sList.insertAdjacentHTML("afterbegin", row("open", TITLE, "Opens my mod's screen"));
+    sList.querySelector(`[data-${ID}="open"]`).onclick = openScreen;
+  }
+
+  const mod = {
+    on() {
+      active = true;
+      // wrap only once. Never "un-wrap": another mod may have wrapped after you. Use the flag.
+      if (hooked) return;
+      hooked = true;
+      const original = openMainMenu;
+      openMainMenu = function (...args) {
+        const result = original.apply(this, args);
+        addRow();
+        return result;
+      };
+    },
+    off() {
+      active = false;
+      document.querySelectorAll(`[data-${ID}="open"]`).forEach((n) => n.remove());
+    },
+  };
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script type="text/plain" data-template="04-random-event.js" data-label="Random Event">
+/* TEMPLATE 04: Random Event. Adds your own events to the game's event pool. */
+(() => {
+  "use strict";
+  const ID = "my-events";
+
+  const MY_EVENTS = [
+    {
+      min: 18, // youngest age
+      max: 60, // oldest age
+      kind: "My Mod", // label on the card; also used to avoid repeats
+      key: `${ID}:wallet`,
+      make() {
+        const amount = rint(20, 200);
+        return {
+          who: "A stranger",
+          av: "1f9d1",
+          icon: "1f45b", // emoji code: a file name in the game's emoji folder
+          title: "Lost Wallet",
+          desc: `You found a wallet with ${usd(amount)} in it.`,
+          choices: [
+            ["Return it", () => fx({ Happiness: 8 }, "I returned a lost wallet.")],
+            ["Keep the money", () => fx({ money: amount, Happiness: -4 }, "I kept the cash from a lost wallet.")],
+          ],
+        };
+      },
+    },
+  ];
+
+  const mod = {
+    on() {
+      if (typeof EVENTS === "undefined") return void console.warn(`[${ID}] event list not ready`);
+      MY_EVENTS.forEach((e) => EVENTS.includes(e) || EVENTS.push(e));
+    },
+    off() {
+      MY_EVENTS.forEach((e) => {
+        const i = EVENTS.indexOf(e);
+        if (i >= 0) EVENTS.splice(i, 1);
+      });
+    },
+  };
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script type="text/plain" data-template="05-yearly-effect.js" data-label="Yearly Effect">
+/* TEMPLATE 05: Yearly Effect. Runs your code each time the player ages up,
+ * and keeps its own data inside the saved life. */
+(() => {
+  "use strict";
+  const ID = "my-yearly";
+  const KEY = "modMyYearly"; // your own field in the save. Make it unique.
+  let button = null;
+  let timer = 0;
+  let lastAge = null;
+
+  // create the data the first time it is needed. Keep it plain: numbers, text, true/false, lists.
+  const data = () => (state[KEY] ||= { years: 0, total: 0 });
+
+  function newYear() {
+    if (state.dead || state.age === lastAge) return; // the tap didn't age the character
+    lastAge = state.age;
+    if (state.age < 18) return;
+    const d = data();
+    d.years += 1;
+    d.total += 100;
+    fx({ money: 100 }, `My side income paid me ${usd(100)}.`);
+  }
+
+  function onTap() {
+    clearTimeout(timer);
+    timer = setTimeout(newYear, 400); // let the game finish its own yearly work first
+  }
+
+  const mod = {
+    on() {
+      if (button) return;
+      button = document.getElementById("ageBtn");
+      if (!button) return void console.warn(`[${ID}] Age button not found`);
+      lastAge = state.age;
+      button.addEventListener("click", onTap);
+    },
+    off() {
+      button?.removeEventListener("click", onTap);
+      button = null;
+      clearTimeout(timer);
+    },
+  };
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script type="text/plain" data-template="06-special-career.js" data-label="Special Career">
+/* TEMPLATE 06: Special Career. A row under Occupation > Special Careers with joining,
+ * one yearly action, a skill stat and quitting. Data lives in state.modMyCareer,
+ * so the Mod Menu's Data tab can find and edit it. */
+(() => {
+  "use strict";
+  const ID = "my-career";
+  const KEY = "modMyCareer";
+  const NAME = "Street Performer";
+  const MIN_AGE = 16;
+  let active = false;
+  let hooked = false;
+
+  const chevron = () => (typeof CHEV !== "undefined" ? CHEV : "");
+  const row = (key, title, text, dim) =>
+    `<div class="row${dim ? " dis" : ""}" data-${ID}="${key}"><img src="ui/gear.png"><div class="t"><b>${title}</b><span>${text}</span></div>${dim ? "" : chevron()}</div>`;
+  const find = (key) => sList.querySelector(`[data-${ID}="${key}"]`);
+
+  function openCareer() {
+    sTitle.textContent = NAME.toUpperCase();
+    sSub.style.display = "none";
+    sBack.innerHTML = typeof BACK_ICON !== "undefined" ? BACK_ICON : "&larr;";
+    sBack.onclick = () => openSpecialCareers();
+    const c = state[KEY];
+    if (!c) {
+      sList.innerHTML = '<div class="sec">Join</div>' + row("join", "Start performing", `Age ${MIN_AGE}+`);
+      find("join").onclick = () => {
+        if (state.age < MIN_AGE) return notice("Too Young", `You must be ${MIN_AGE}.`, null, true);
+        state[KEY] = { skill: rint(5, 25), earned: 0, playedAt: null };
+        say(`I became a ${NAME.toLowerCase()}.`);
+        openCareer();
+      };
+      return;
+    }
+    const used = c.playedAt === state.age;
+    sList.innerHTML =
+      `<div class="sec">Skill ${c.skill}/100 · Earned ${usd(c.earned)}</div>` +
+      row("play", "Perform", used ? "Already performed this year" : "Once a year", used) +
+      row("quit", "Quit", "Leave this career");
+    if (!used)
+      find("play").onclick = () => {
+        c.playedAt = state.age;
+        const good = chance(0.35 + c.skill / 200); // the Mod Menu's Odds tab can change chance()
+        const pay = good ? rint(50, 400) + c.skill * 5 : rint(0, 30);
+        c.skill = clamp(c.skill + rint(2, 7));
+        c.earned += pay;
+        fx({ money: pay, Happiness: good ? 5 : -3 }, `I performed on the street and made ${usd(pay)}.`);
+        notice(good ? "Great Show" : "Tough Crowd", `You made ${usd(pay)}.`, null, true);
+        openCareer();
+      };
+    find("quit").onclick = () => {
+      delete state[KEY];
+      say(`I quit being a ${NAME.toLowerCase()}.`);
+      openCareer();
+    };
+  }
+
+  function addRow() {
+    if (!active || find("open")) return;
+    sList.insertAdjacentHTML("beforeend", row("open", NAME, "Perform for tips"));
+    find("open").onclick = openCareer;
+  }
+
+  const mod = {
+    on() {
+      active = true;
+      if (hooked) return;
+      hooked = true;
+      const original = openSpecialCareers;
+      openSpecialCareers = function (...args) {
+        const result = original.apply(this, args);
+        addRow();
+        return result;
+      };
+    },
+    off() {
+      active = false; // the saved career data is kept on purpose
+      document.querySelectorAll(`[data-${ID}="open"]`).forEach((n) => n.remove());
+    },
+  };
+  if (!(window.MOD_SOURCES && MOD_SOURCES.register(mod))) mod.on();
+})();
+</script>
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const templates = [...document.querySelectorAll('script[type="text/plain"][data-template]')];
+
+  // ------------------------------------------------------------------ make
+  templates.forEach((t, i) => $("kind").add(new Option(t.dataset.label, String(i))));
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-+$/g, "").slice(0, 40);
+  let ownId = false;
+  $("id").addEventListener("input", () => (ownId = $("id").value !== ""));
+  $("title").addEventListener("input", () => ownId || ($("id").value = slug($("title").value)));
+
+  function build() {
+    const id = $("id").value.trim();
+    if (!/^[a-z][a-z0-9-]{1,39}$/.test(id))
+      return { error: "The mod id needs 2-40 characters: a-z, 0-9 and dashes, starting with a letter." };
+    const name = $("title").value.trim() || id.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    if (/["\\`$<>]/.test(name)) return { error: 'The name cannot contain " \\ ` $ < or >.' };
+    const key = "mod" + id.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase());
+    const code = templates[$("kind").value].textContent.replace(/^\n/, "")
+      .replace(/const ID = "[^"]*";/, () => `const ID = "${id}";`)
+      .replace(/const TITLE = "[^"]*";/, () => `const TITLE = "${name}";`)
+      .replace(/const NAME = "[^"]*";/, () => `const NAME = "${name}";`)
+      .replace(/const KEY = "[^"]*";/, () => `const KEY = "${key}";`);
+    return { file: `${id}.js`, code };
+  }
+  function act(then) {
+    const result = build();
+    $("made").textContent = result.error || "";
+    if (!result.error) then(result);
+  }
+  $("make").addEventListener("click", () =>
+    act(({ file, code }) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([code], { type: "text/javascript" }));
+      a.download = file;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      $("made").textContent = `${file} is ready. Look in your downloads, then add it in the game under Custom Mod Sources.\nNo download? Use "Show the code" and copy it into a file.`;
+    }),
+  );
+  $("view").addEventListener("click", () => act(({ code }) => ($("made").textContent = code)));
+
+  // ------------------------------------------------------------------ check
+  function check(code) {
+    const found = [];
+    const add = (level, text) => found.push([level, text]);
+    try {
+      new Function(code); // reads the code to find syntax errors. The function is never called.
+      add("ok", "syntax");
+    } catch (e) {
+      if (e instanceof SyntaxError) add("ERROR", `syntax error: ${e.message}`);
+      else add("WARN", "this browser could not check the syntax");
+      if (e instanceof SyntaxError && !/^\s*(import|export)\s/m.test(code)) return found;
+    }
+    const bare = code.replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, "");
+    const has = (re) => re.test(bare);
+    if (has(/MOD_SOURCES\s*\.\s*register/)) add("ok", "registers an on/off switch");
+    else add("WARN", "no MOD_SOURCES.register(): switching off relies on the automatic switch");
+    if (!has(/\boff\s*(\(\s*\)\s*\{|:\s*(function|\())|function off\b/)) add("WARN", "no off() found");
+    if (!/^\s*(\/\*[\s\S]*?\*\/\s*|\/\/.*\n\s*)*[;(!]/.test(code)) add("WARN", "not wrapped in (() => { ... })(); its names may clash with the game");
+    const rules = [
+      ["ERROR", /^\s*(import|export)\s/m, "import/export do not work: a mod is one plain script"],
+      ["ERROR", /window\.(state|EVENTS|CHEV|BACK_ICON)\b/, "state, EVENTS, CHEV and BACK_ICON are not on window: use the bare name"],
+      ["ERROR", /document\.write\b/, "document.write can wipe the page"],
+      ["ERROR", /Math\.random\s*=/, "replacing Math.random breaks the whole game"],
+      ["WARN", /innerHTML\s*\+=/, "innerHTML += rebuilds the list and drops other mods' tap handlers"],
+      ["WARN", /localStorage\.clear|indexedDB\.deleteDatabase/, "deletes saved games"],
+      ["WARN", /\beval\s*\(|new Function\b/, "runs text as code"],
+      ["WARN", /\bfetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|https?:\/\//, "talks to or names a web address: check what is sent"],
+    ];
+    rules.forEach(([level, re, text]) => has(re) && add(level, text));
+    if (has(/setInterval\s*\(/) && !has(/clearInterval\s*\(/)) add("WARN", "starts a repeating timer and never clears it");
+    if (has(/(window|document)\.addEventListener\s*\(/) && !has(/removeEventListener\s*\(/))
+      add("WARN", "adds page-wide listeners and never removes them");
+    return found;
+  }
+  function report(name, found) {
+    const out = $("report");
+    out.replaceChildren(name + "\n\n");
+    for (const [level, text] of found) {
+      const line = document.createElement("span");
+      line.className = level;
+      line.textContent = `${level.padEnd(6)}${text}\n`;
+      out.appendChild(line);
+    }
+    const count = (l) => found.filter(([x]) => x === l).length;
+    out.append(`\n${count("ERROR")} errors, ${count("WARN")} warnings`);
+  }
+  $("file").addEventListener("change", () => {
+    const file = $("file").files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => report(file.name, check(String(reader.result)));
+    reader.onerror = () => ($("report").textContent = "Couldn't read that file.");
+    reader.readAsText(file);
+    $("file").value = ""; // so the same file can be checked again after editing
+  });
+  window.MOD_MAKER = { check, build };
+})();
+</script>
+</body>
+</html>

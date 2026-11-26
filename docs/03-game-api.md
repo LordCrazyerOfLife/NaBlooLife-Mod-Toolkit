@@ -1,7 +1,13 @@
+[⬅️ 2. Mod structure and on/off](02-mod-structure.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [4. Events, yearly effects and careers ➡️](04-events-and-careers.md)
+
 # 3. Game functions you can use
 
-These were read from the game's code. It was not written as a public API, so a game update can
-change any of them. Check before you call, and use `tools/inspector-mod.js` to see what exists.
+> **On this page:** [Important: names are not on `window`](#important-names-are-not-on-window) · [The life: `state`](#the-life-state) · [Messages](#messages) · [Changing stats](#changing-stats) · [Helpers](#helpers) · [Choice cards: `jCard`](#choice-cards-jcard) · [Screens](#screens) · [File paths](#file-paths)
+
+> [!NOTE]
+> These were read from the game's code. It was not written as a public API, so a game update can
+> change any of them. Check before you call, and use the [Mod Inspector](../tools/inspector-mod.js)
+> to see what exists.
 
 ## Important: names are not on `window`
 `state`, `EVENTS`, `CHEV`, `BACK_ICON` and many helpers are declared with `const`.
@@ -91,3 +97,7 @@ The game page sets its base folder to `unsorted/`. So `"ui/gear.png"` means
 `unsorted/ui/gear.png`. To reach a top-level folder, start with `../`.
 A picked custom mod cannot bring image files with it: use the game's images, emoji text,
 inline SVG or `data:` URLs.
+
+---
+
+[⬅️ 2. Mod structure and on/off](02-mod-structure.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [4. Events, yearly effects and careers ➡️](04-events-and-careers.md)

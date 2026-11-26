@@ -1,4 +1,8 @@
+[⬅️ 3. Game functions you can use](03-game-api.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [5. Saving data ➡️](05-saving-data.md)
+
 # 4. Events, yearly effects and careers
+
+> **On this page:** [Random events](#random-events) · [Running code each year](#running-code-each-year) · [A special career](#a-special-career) · [Balance tips](#balance-tips)
 
 ## Random events
 `EVENTS` is the game's event pool. Add objects like this (full file: `templates/04-random-event.js`):
@@ -43,10 +47,16 @@ Compare `state.age` with the last value you saw, and check `state.dead`.
 5. Use `chance()` for outcomes and `fx()` for results.
 
 It is a **side career**: it does not set `state.job`. Taking over the main job affects many other
-parts of the game; study `mod/content-packs/drift.js` in the game repository before trying.
+parts of the game; study
+[`drift.js`](https://github.com/LordCrazyerOfLife/NaBlooLife-Overhaul/blob/main/mod/content-packs/drift.js)
+in the game repository before trying.
 
 ## Balance tips
 - Give every reward a cost or a risk.
 - Base success on a stat: `chance(0.35 + skill / 200)`.
 - Cap stats with `clamp()`.
 - Test a young, an old, a jailed and a dead character.
+
+---
+
+[⬅️ 3. Game functions you can use](03-game-api.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [5. Saving data ➡️](05-saving-data.md)

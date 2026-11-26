@@ -1,4 +1,8 @@
+[⬅️ 1. Getting started](01-getting-started.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [3. Game functions you can use ➡️](03-game-api.md)
+
 # 2. Mod structure and on/off
+
+> **On this page:** [The skeleton](#the-skeleton) · [Rules for register()](#rules-for-register) · [Writing a good off()](#writing-a-good-off) · [The automatic off switch](#the-automatic-off-switch) · [Settings that survive a restart](#settings-that-survive-a-restart)
 
 ## The skeleton
 ```js
@@ -69,9 +73,14 @@ hides or bypasses them. It **cannot** undo changes to money, stats, the save, li
 It may also miss work that continues after `await` or a network reply.
 **Write on() and off().** It is the dependable way.
 
-Neither method undoes what already happened to a life.
+> [!IMPORTANT]
+> Neither method undoes what already happened to a life.
 
 ## Settings that survive a restart
 - Data about **this life** goes in `state` (see [Saving data](05-saving-data.md)).
 - Preferences for **all lives** can use `localStorage` with your own prefix:
   `localStorage.setItem("mymod:my-menu:color", "blue")`. Never call `localStorage.clear()`.
+
+---
+
+[⬅️ 1. Getting started](01-getting-started.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [3. Game functions you can use ➡️](03-game-api.md)

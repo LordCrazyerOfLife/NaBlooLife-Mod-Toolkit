@@ -1,21 +1,21 @@
+[⬅️ 5. Saving data](05-saving-data.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [7. Sharing your mod ➡️](07-publishing.md)
+
 # 6. Testing and debugging
 
+> **On this page:** [Level 1: the checker](#level-1-the-checker) · [Level 2: the sandbox](#level-2-the-sandbox) · [Level 3: the real game](#level-3-the-real-game) · [Reading errors with a computer](#reading-errors-with-a-computer) · [Common problems](#common-problems) · [Waiting for the game](#waiting-for-the-game)
+
 ## Level 1: the checker
-```bash
-node tools/check-mod.mjs my-mods/my-mod.js
-```
+Open `mod-maker.html` in your browser and choose your file under **Check a mod**.
 It checks syntax and looks for common mistakes **without running the file**. It is a pattern
 check, so it can miss problems or warn about code that is fine. A pass does not mean safe.
+Syntax messages don't include a line number: your browser console or code editor can help.
 
 ## Level 2: the sandbox
 `sandbox/index.html` is a pretend game with stand-ins for common functions.
-```bash
-cd NaBlooLife-Mod-Toolkit
-python3 -m http.server 8777 --bind 127.0.0.1
-```
-Open `http://127.0.0.1:8777/sandbox/` in your browser, pick your mod file, then use
-**Switch off**, **Switch on**, **Main Menu**, **Special Careers**, **Age up** and
-**Run a mod event**. Tap **Reset** before loading another file.
+
+Open it in your browser, pick your mod file, then use **Switch off**, **Switch on**,
+**Main Menu**, **Special Careers**, **Age up** and **Run a mod event**.
+Tap **Reset** before loading another file.
 
 The sandbox does **not** include the whole game. A mod can pass there and still fail in the game.
 
@@ -34,13 +34,14 @@ shows which game names exist, what is in `state`, and errors seen since it start
 - [ ] Works with the Mod Menu, Cheat Menu and your other mods.
 
 ## Reading errors with a computer
-With USB debugging on, open `chrome://inspect` in desktop Chrome to see your phone's console.
+On a computer, open your browser's developer tools and look at the **Console**. For Chrome on
+Android, turn on USB debugging, connect the phone, and open `chrome://inspect` on the computer.
 
 ## Common problems
 | Problem | Likely cause |
 |---|---|
-| Nothing happens at all | syntax error, or a name that doesn't exist yet. Run the checker |
-| `state is not defined` or `window.state` is empty | use the bare name `state`; test in the game or sandbox, not Node |
+| Nothing happens at all | syntax error, or a name that doesn't exist yet. Use the checker |
+| `state is not defined` or `window.state` is empty | use the bare name `state`; test in the game or sandbox |
 | `register() needs on() and off()` | missing function, or `register` called late |
 | Rows stop responding | something used `innerHTML +=` on the list |
 | Two buttons appear | `on()` doesn't check whether it already ran, or the mod is installed twice |
@@ -59,3 +60,7 @@ let tries = 0;
   if (++tries < 100) setTimeout(wait, 100);
 })();
 ```
+
+---
+
+[⬅️ 5. Saving data](05-saving-data.md) &nbsp;|&nbsp; [🏠 Toolkit home](../README.md) &nbsp;|&nbsp; [7. Sharing your mod ➡️](07-publishing.md)
