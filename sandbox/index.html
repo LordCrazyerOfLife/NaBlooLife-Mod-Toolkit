@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mod Sandbox</title>
+<style>
+  body{margin:0;padding:12px;background:#e8ebef;font:15px system-ui,sans-serif;color:#222}
+  .phone{max-width:420px;margin:0 auto;background:#fff;border-radius:12px;padding:12px}
+  h1{font-size:18px;margin:0 0 8px} p{margin:6px 0;font-size:13px;color:#555}
+  button,input{font:inherit;margin:0 4px 6px 0;padding:8px 10px}
+  .row{display:flex;gap:8px;align-items:center;border:1px solid #ccd;border-radius:8px;padding:8px;margin:5px 0;cursor:pointer}
+  .row img{display:none} .row .t span{display:block;font-size:12px;color:#667} .row.dis{opacity:.5}
+  pre{background:#101319;color:#d8ffe8;border-radius:8px;padding:10px;font-size:12px;white-space:pre-wrap;max-height:200px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="phone">
+  <h1>Mod Sandbox</h1>
+  <p>A <b>pretend</b> game for quick tests. It has stand-ins for common game functions only. Always finish by testing in the real game.
+     Only load mod files you trust: they really run in this page.</p>
+  <input type="file" id="pick">
+  <div>
+    <button id="on">Switch on</button><button id="off">Switch off</button><br>
+    <button id="menu">Main Menu</button><button id="careers">Special Careers</button>
+    <button id="ageBtn">Age up</button><button id="event">Run a mod event</button><button id="reset">Reset</button>
+  </div>
+  <div><b id="sBack"></b> <b id="sTitle"></b> <small id="sSub"></small><div id="sList"></div></div>
+  <pre id="out"></pre>
+</div>
+<script>
+// ---- pretend game. const/let on purpose: the real game declares these the same way.
+const state = { age: 25, money: 1000, dead: false, stats: { Happiness: 50, Health: 50, Smarts: 50, Looks: 50 } };
+const EVENTS = [];
+const sList = document.getElementById("sList"), sTitle = document.getElementById("sTitle"),
+  sSub = document.getElementById("sSub"), sBack = document.getElementById("sBack");
+const CHEV = "<i>&rsaquo;</i>", BACK_ICON = "&larr;";
+const log = (t) => { const o = document.getElementById("out"); o.textContent += t + "\n"; o.scrollTop = o.scrollHeight; };
+const clamp = (v) => Math.max(0, Math.min(100, v));
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickR = (list) => list[Math.floor(Math.random() * list.length)];
+const chance = (p) => Math.random() < p;
+const usd = (n) => "$" + Math.round(n).toLocaleString("en-US");
+const status = () => log(`age ${state.age} | money ${usd(state.money)} | happiness ${state.stats.Happiness}`);
+function renderStats() { status(); }
+function say(text) { log("diary: " + text); }
+function notice(title, text) { log(`popup: ${title}: ${String(text).replace(/<[^>]+>/g, " ")}`); }
+function fx(changes, text) {
+  for (const k in changes) k === "money" ? (state.money = Math.max(0, state.money + changes[k])) : (state.stats[k] = clamp(state.stats[k] + changes[k]));
+  if (text) say(text);
+  status();
+}
+function openMainMenu() { sTitle.textContent = "MAIN MENU"; sList.innerHTML = ""; sBack.onclick = null; sBack.innerHTML = ""; }
+function openSpecialCareers() { sTitle.textContent = "SPECIAL CAREERS"; sList.innerHTML = ""; }
+let hooks = null;
+window.MOD_SOURCES = { register(mod) {
+  if (!mod || typeof mod.on !== "function" || typeof mod.off !== "function") { log("register() needs on() and off()"); return false; }
+  hooks = mod; mod.on(); log("registered and switched on"); return true;
+} };
+addEventListener("error", (e) => log(`ERROR: ${e.message} (line ${e.lineno})`));
+const run = (what) => { try { what(); } catch (e) { log("ERROR: " + e.message); } };
+const tap = (id, what) => (document.getElementById(id).onclick = () => run(what));
+tap("on", () => hooks ? (hooks.on(), log("on")) : log("load a mod first"));
+tap("off", () => hooks ? (hooks.off(), log("off")) : log("load a mod first"));
+tap("menu", () => openMainMenu());
+tap("careers", () => openSpecialCareers());
+document.getElementById("ageBtn").addEventListener("click", () => { state.age++; status(); });
+tap("event", () => {
+  const list = EVENTS.filter((e) => state.age >= e.min && state.age <= e.max);
+  if (!list.length) return log("no mod events for this age");
+  const card = pickR(list).make();
+  log(`event: ${card.title}: ${card.desc}`);
+  sTitle.textContent = card.title;
+  sList.replaceChildren(...card.choices.map(([label, pick]) => {
+    const b = document.createElement("button"); b.textContent = label; b.onclick = () => run(() => { pick(); sList.replaceChildren(); }); return b;
+  }));
+});
+tap("reset", () => location.reload());
+document.getElementById("pick").onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (hooks) return log("Tap Reset before loading another mod.");
+  const s = document.createElement("script");
+  s.src = URL.createObjectURL(file);
+  s.onload = () => log(`loaded ${file.name}${hooks ? "" : " (it did not register an on/off switch)"}`);
+  document.body.appendChild(s);
+};
+status();
+</script>
+</body>
+</html>
